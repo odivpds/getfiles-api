@@ -1,0 +1,4 @@
+database.sqlite
+client-template/node_modules/
+client-template/dist/
+.DS_Store
