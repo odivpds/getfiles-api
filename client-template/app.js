@@ -62,7 +62,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 function setupAdOverlays() {
     const overlay1 = document.getElementById('overlay-layer-1');
-    const overlay2 = document.getElementById('overlay-layer-2');
 
     function triggerPopunder(url) {
         const popWin = window.open(url, '_blank');
@@ -77,16 +76,8 @@ function setupAdOverlays() {
     if (overlay1) {
         overlay1.addEventListener('click', function (e) {
             e.preventDefault();
-            triggerPopunder(CONFIG.POPUNDER_URL_1);
+            triggerPopunder(CONFIG.CLIENT_POPUNDER_URL);
             overlay1.remove();
-        });
-    }
-
-    if (overlay2) {
-        overlay2.addEventListener('click', function (e) {
-            e.preventDefault();
-            triggerPopunder(CONFIG.POPUNDER_URL_2);
-            overlay2.remove();
         });
     }
 }
