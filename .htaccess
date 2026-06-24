@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Abaikan rewrite jika file/folder ada beneran (seperti client-template)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Arahkan semua request lain ke index.php
+    RewriteRule ^(.*)$ index.php [L,QSA]
+</IfModule>
