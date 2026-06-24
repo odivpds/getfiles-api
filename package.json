@@ -1,0 +1,13 @@
+{
+  "name": "getfiles-client",
+  "version": "1.0.0",
+  "description": "Video player client template",
+  "main": "index.js",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "html-minifier-terser": "^7.2.0",
+    "javascript-obfuscator": "^4.1.0"
+  }
+}
