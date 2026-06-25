@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         videoSlug = window.location.hash.replace('#/', '').replace('#', '');
     } else if (window.location.search) {
         const urlParams = new URLSearchParams(window.location.search);
-        videoSlug = urlParams.get('v') || '';
+        videoSlug = urlParams.get('v') || urlParams.get('id') || '';
     } else {
         const pathParts = window.location.pathname.split('/').filter(Boolean);
         if (pathParts.length > 0) {
