@@ -42,7 +42,8 @@ async function build() {
     });
 
     fs.writeFileSync(path.join(DIST_DIR, 'index.html'), minifiedHtml);
-    console.log('✅ index.html berhasil dipadatkan dan disimpan ke dist/index.html');
+    fs.writeFileSync(path.join(DIST_DIR, '404.html'), minifiedHtml);
+    console.log('✅ index.html dan 404.html berhasil dipadatkan dan disimpan ke dist/');
 
     console.log('📄 Menyalin config.js (Tidak diacak)...');
     fs.copyFileSync(CONFIG_JS_PATH, path.join(DIST_DIR, 'config.js'));
