@@ -1,32 +1,336 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Nanti user/affiliate mengganti judul web sesuai keinginan mereka -->
     <title>Watch Video Premium</title>
-
-    <!-- [PLACEHOLDER] Script Vignette Push (Misal dari Adsterra/Monetag) ditaruh di sini -->
-    <!-- <script src="//example.com/vignette.js" data-cfasync="false"></script> -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-color: #0d1117; 
-            --text-color: #c9d1d9; 
-            --primary: #888888; 
+            --bg-color: #0d1117;
+            --bg-card: #151c2a;
+            --text-color: #c9d1d9;
+            --primary: #6366f1;
+            --border: #1e293b;
         }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* ========== NAVBAR ========== */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-color);
+        }
+
+        .navbar .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .navbar .logo svg {
+            width: 24px;
+            height: 24px;
+            color: var(--primary);
+        }
+
+        /* ========== HERO SECTION (Gallery Mode) ========== */
+        .hero {
+            text-align: center;
+            padding: 80px 16px 40px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #818cf8, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+        }
+
+        .hero p {
+            max-width: 640px;
+            margin: 0 auto;
+            color: #8b949e;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        /* ========== VIDEO GALLERY GRID ========== */
+        .gallery-section {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 40px 16px 80px;
+        }
+
+        .gallery-section .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .gallery-section .section-title h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .gallery-section .section-title .underline {
+            height: 4px;
+            width: 80px;
+            background: linear-gradient(90deg, #6366f1, #a78bfa);
+            border-radius: 999px;
+            margin: 0 auto 12px;
+        }
+
+        .gallery-section .section-title .total {
+            font-size: 0.875rem;
+            color: #8b949e;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .video-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-card:hover {
+            border-color: #374151;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+        }
+
+        .video-card .thumb-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            background: #0a0d14;
+            overflow: hidden;
+        }
+
+        .video-card .thumb-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .video-card:hover .thumb-wrapper img {
+            transform: scale(1.05);
+        }
+
+        .video-card .play-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            transition: background 0.3s;
+        }
+
+        .video-card:hover .play-overlay {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .video-card .play-overlay svg {
+            width: 48px;
+            height: 48px;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .video-card:hover .play-overlay svg {
+            color: #818cf8;
+            transform: scale(1.1);
+        }
+
+        .video-card .hd-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #d1d5db;
+        }
+
+        .video-card .card-body {
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .video-card .card-body h3 {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #e5e7eb;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .video-card:hover .card-body h3 {
+            color: #fff;
+        }
+
+        .video-card .card-body .meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .video-card .card-body .views {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .video-card .card-body .watch-btn {
+            font-size: 0.8rem;
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            padding: 4px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .video-card:hover .card-body .watch-btn {
+            opacity: 1;
+        }
+
+        .video-card .card-body .watch-btn:hover {
+            background: #6366f1;
+            color: #fff;
+        }
+
+        /* ========== PAGINATION ========== */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 48px;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid #374151;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #1e293b;
+            border-color: #4b5563;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pagination .page-info {
+            font-size: 0.875rem;
+            color: #8b949e;
+            background: #0d131f;
+            border: 1px solid var(--border);
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+
+        .pagination .page-info span {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        /* ========== LOADING SPINNER ========== */
+        .loading-spinner {
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            justify-content: center;
+            padding: 80px 16px;
+            color: #6b7280;
         }
-        .main-layout {
+
+        .loading-spinner svg {
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+            color: #6366f1;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ========== PLAYER MODE ========== */
+        .player-layout {
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -34,55 +338,54 @@
             width: 100%;
             max-width: 1200px;
             padding: 20px;
-            box-sizing: border-box;
+            margin: 0 auto;
         }
-        
-        .container {
+
+        .player-container {
             flex: 1;
             width: 100%;
             max-width: 800px;
         }
 
-        .side-ad {
-            display: none; /* Disembunyikan di mobile */
-            width: 160px;
-            min-height: 600px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px dashed rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: rgba(255, 255, 255, 0.4);
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-size: 0.8rem;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        @media (min-width: 1024px) {
-            .side-ad {
-                display: flex; /* Ditampilkan di desktop */
-            }
-        }
-        h1 {
+        .player-container h1 {
             font-size: 1.5rem;
             margin-bottom: 10px;
             text-align: center;
             font-weight: 600;
             color: #fff;
         }
-        
+
+        .side-ad {
+            display: none;
+            width: 160px;
+            min-height: 600px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.8rem;
+            padding: 10px;
+        }
+
+        @media (min-width: 1024px) {
+            .side-ad {
+                display: flex;
+            }
+        }
+
         .video-wrapper {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            padding-top: 56.25%;
             background-color: #05070a;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
             margin-bottom: 20px;
         }
-        
+
         .video-wrapper iframe {
             position: absolute;
             top: 0;
@@ -91,10 +394,13 @@
             height: 100%;
             border: 0;
         }
-        
+
         #status-message {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -105,16 +411,12 @@
             z-index: 5;
         }
 
-        .overlay-transparent {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10;
-            cursor: pointer;
-        }
-
         .overlay-fake {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(2px);
             z-index: 20;
@@ -129,93 +431,142 @@
             background: rgba(0, 0, 0, 0.4);
         }
 
-        .play-icon {
-            width: 80px; height: 80px;
+        .overlay-fake .play-icon-big {
+            width: 80px;
+            height: 80px;
             fill: #fff;
             opacity: 0.9;
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
         }
 
-        .overlay-fake:hover .play-icon {
+        .overlay-fake:hover .play-icon-big {
             transform: scale(1.15);
         }
 
         .ad-slot {
             width: 100%;
             min-height: 90px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px dashed rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: rgba(255, 255, 255, 0.4);
             margin-bottom: 20px;
-            text-align: center;
-            font-size: 0.875rem;
         }
-        
+
         .stats {
             color: #8b949e;
             font-size: 0.875rem;
             margin-bottom: 20px;
             text-align: center;
         }
+
+        /* ========== UTILITY ========== */
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
+
 <body>
 
-    <div class="main-layout">
-        <!-- Ad Slot Kiri (Skyscraper 160x600) -->
-        <div class="side-ad" id="ad-side-left">
-            <script async="async" data-cfasync="false" src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
-            <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
+    <!-- ========== NAVBAR (Always Visible) ========== -->
+    <nav class="navbar">
+        <a href="/" class="logo" id="home-link">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                    clip-rule="evenodd" />
+            </svg>
+            <span id="site-name">Getfiles</span>
+        </a>
+    </nav>
+
+    <!-- ==========================================
+         MODE 1: GALLERY (Halaman Utama)
+         ========================================== -->
+    <div id="gallery-mode">
+        <!-- Hero -->
+        <div class="hero">
+            <h1>Welcome to Getfiles</h1>
+            <p>Discover and stream the most engaging videos across the web in pristine quality. Experience seamless
+                playback, lightning-fast servers, and a vast collection curated just for you.</p>
         </div>
 
-        <div class="container">
-            <!-- Title & Viewers injected dynamically via JS -->
-            <h1 id="video-title">Memuat Video...</h1>
-            <div class="stats" id="video-views"></div>
-
-            <!-- Ad Slot: Native Banner (Atas) -->
-            <div class="ad-slot" id="ad-native-top">
-                <script async="async" data-cfasync="false" src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
-                <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
-            </div>
-
-            <!-- Area Video Utama dengan Overlay Iklan -->
-            <div class="video-wrapper" id="video-wrapper">
-                
-                <div id="status-message">
-                    <span>Sedang memuat video...</span>
-                </div>
-                
-                <div id="iframe-container" style="display:none;"></div>
-                
-                <div id="overlay-layer-1" class="overlay-fake">
-                    <svg class="play-icon" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                    </svg>
-                </div>
-            </div>
-
-            <!-- Ad Slot: Native Banner (Bawah) -->
-            <div class="ad-slot" id="ad-native-bottom">
-                <script async="async" data-cfasync="false" src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
+        <!-- Ad Slot Atas Gallery -->
+        <div style="max-width: 728px; margin: 0 auto 24px; padding: 0 16px;">
+            <div class="ad-slot" id="ad-gallery-top">
+                <script async="async" data-cfasync="false"
+                    src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
                 <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
             </div>
         </div>
 
-        <!-- Ad Slot Kanan (Skyscraper 160x600) -->
-        <div class="side-ad" id="ad-side-right">
-            <script async="async" data-cfasync="false" src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
-            <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
+        <!-- Link to Generator -->
+        <div class="gallery-section" style="text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40vh;">
+            <h2 style="font-size: 1.5rem; margin-bottom: 24px; color: #fff;">Looking to generate video files?</h2>
+            <a href="https://getfiles.my.id/generator" target="_blank" style="background-color: #3b82f6; color: #fff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.1rem; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#2563eb'" onmouseout="this.style.backgroundColor='#3b82f6'">
+                Go to Generator Page
+            </a>
         </div>
     </div>
 
-    <!-- Script Utama (Logic API & Iklan) -->
+    <!-- ==========================================
+         MODE 2: PLAYER (Halaman Video)
+         ========================================== -->
+    <div id="player-mode" class="hidden">
+        <div class="player-layout">
+            <!-- Ad Slot Kiri -->
+            <div class="side-ad" id="ad-side-left">
+                <script async="async" data-cfasync="false"
+                    src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
+                <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
+            </div>
+
+            <div class="player-container">
+                <h1 id="video-title">Memuat Video...</h1>
+                <div class="stats" id="video-views"></div>
+
+                <!-- Ad Slot: Native Banner (Atas) -->
+                <div class="ad-slot" id="ad-native-top">
+                    <script async="async" data-cfasync="false"
+                        src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
+                    <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
+                </div>
+
+                <!-- Area Video Utama -->
+                <div class="video-wrapper" id="video-wrapper">
+                    <div id="status-message">
+                        <span>Sedang memuat video...</span>
+                    </div>
+                    <div id="iframe-container" style="display:none;"></div>
+                    <div id="overlay-layer-1" class="overlay-fake">
+                        <svg class="play-icon-big" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Ad Slot: Native Banner (Bawah) -->
+                <div class="ad-slot" id="ad-native-bottom">
+                    <script async="async" data-cfasync="false"
+                        src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
+                    <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
+                </div>
+            </div>
+
+            <!-- Ad Slot Kanan -->
+            <div class="side-ad" id="ad-side-right">
+                <script async="async" data-cfasync="false"
+                    src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
+                <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Utama -->
     <script src="config.js"></script>
     <script src="app.js"></script>
 </body>
+
 </html>
