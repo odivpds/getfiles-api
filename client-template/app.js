@@ -23,10 +23,18 @@ document.addEventListener('DOMContentLoaded', async function () {
         videoSlug = parts[parts.length - 1];
     }
 
+    const landingPageEl = document.getElementById('landing-page');
+    const playerPageEl = document.getElementById('player-page');
+
     if (!videoSlug) {
-        statusEl.innerHTML = '⚠️ URL tidak valid. Video ID tidak ditemukan di URL.';
-        titleEl.innerHTML = 'Error';
+        // Tampilkan Landing Page
+        if (landingPageEl) landingPageEl.style.display = 'flex';
+        if (playerPageEl) playerPageEl.style.display = 'none';
         return;
+    } else {
+        // Tampilkan Player Page
+        if (landingPageEl) landingPageEl.style.display = 'none';
+        if (playerPageEl) playerPageEl.style.display = 'flex';
     }
 
     try {
@@ -53,6 +61,20 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         setupAdOverlays();
 
+        // Dengarkan event dari Bunny Player
+        const iframe = document.getElementById('bunny-player');
+        if (window.playerjs && iframe) {
+            const player = new playerjs.Player(iframe);
+            player.on('ready', () => {
+                player.on('pause', () => {
+                    const overlay = document.getElementById('overlay-layer-1');
+                    if (overlay) {
+                        overlay.style.display = 'flex'; // Munculkan kembali iklan
+                    }
+                });
+            });
+        }
+
     } catch (error) {
         console.error(error);
         statusEl.innerHTML = '⚠️ Video tidak ditemukan atau Server Pusat sedang gangguan.';
@@ -77,7 +99,14 @@ function setupAdOverlays() {
         overlay1.addEventListener('click', function (e) {
             e.preventDefault();
             triggerPopunder(CONFIG.CLIENT_POPUNDER_URL);
-            overlay1.remove();
+            overlay1.style.display = 'none'; // Sembunyikan, jangan di-remove
+
+            // Coba mainkan video otomatis
+            const iframe = document.getElementById('bunny-player');
+            if (window.playerjs && iframe) {
+                const player = new playerjs.Player(iframe);
+                player.play();
+            }
         });
     }
 }
