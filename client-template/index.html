@@ -30,20 +30,17 @@
         }
 
         .main-layout {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 20px;
             width: 100%;
             max-width: 1200px;
             padding: 20px;
             box-sizing: border-box;
+            margin: 0 auto;
         }
 
         .container {
-            flex: 1;
             width: 100%;
             max-width: 800px;
+            margin: 0 auto;
         }
 
         .side-ad {
@@ -401,12 +398,6 @@
 
     <!-- PLAYER PAGE -->
     <div id="player-page" class="main-layout" style="display: none;">
-        <!-- Ad Slot Kiri (Skyscraper 160x600) -->
-        <div class="side-ad" id="ad-side-left">
-            <script async="async" data-cfasync="false"
-                src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
-            <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
-        </div>
 
         <div class="container">
             <!-- Title & Viewers injected dynamically via JS -->
@@ -415,9 +406,16 @@
 
             <!-- Ad Slot: Native Banner (Atas) -->
             <div class="ad-slot" id="ad-native-top">
-                <script async="async" data-cfasync="false"
-                    src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
-                <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
+                <script>
+                    atOptions = {
+                        'key': '6eb84078d3041b24734ded8cd82e6922',
+                        'format': 'iframe',
+                        'height': 250,
+                        'width': 300,
+                        'params': {}
+                    };
+                </script>
+                <script src="https://exteriorsingularsharply.com/6eb84078d3041b24734ded8cd82e6922/invoke.js"></script>
             </div>
 
             <!-- Area Video Utama dengan Overlay Iklan -->
@@ -438,18 +436,26 @@
 
             <!-- Ad Slot: Native Banner (Bawah) -->
             <div class="ad-slot" id="ad-native-bottom">
-                <script async="async" data-cfasync="false"
-                    src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
+                <script>
+                    atOptions = {
+                        'key': 'a16e441163ce847964a9bd434f4e73f7',
+                        'format': 'iframe',
+                        'height': 50,
+                        'width': 320,
+                        'params': {}
+                    };
+                </script>
+                <script src="https://exteriorsingularsharply.com/a16e441163ce847964a9bd434f4e73f7/invoke.js"></script>
+            </div>
+
+            <!-- Ad Slot: Native Banner (Bawah 2) -->
+            <div class="ad-slot" id="ad-native-bottom-2">
+                <script async="async" data-cfasync="false" src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
                 <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
             </div>
         </div>
 
-        <!-- Ad Slot Kanan (Skyscraper 160x600) -->
-        <div class="side-ad" id="ad-side-right">
-            <script async="async" data-cfasync="false"
-                src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
-            <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
-        </div>
+
     </div>
 
     <!-- Script Utama (Logic API & Iklan) -->
