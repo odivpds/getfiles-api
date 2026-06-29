@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Nanti user/affiliate mengganti judul web sesuai keinginan mereka -->
     <title>Watch Video Premium</title>
+    <meta name="monetag" content="241131d292a58cd2db89711e642bb654">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-86YN0MK4NN"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-86YN0MK4NN');
+    </script>
 
     <!-- [PLACEHOLDER] Script Vignette Push (Misal dari Adsterra/Monetag) ditaruh di sini -->
     <!-- <script src="//example.com/vignette.js" data-cfasync="false"></script> -->
@@ -406,16 +416,8 @@
 
             <!-- Ad Slot: Native Banner (Atas) -->
             <div class="ad-slot" id="ad-native-top">
-                <script>
-                    atOptions = {
-                        'key': '6eb84078d3041b24734ded8cd82e6922',
-                        'format': 'iframe',
-                        'height': 250,
-                        'width': 300,
-                        'params': {}
-                    };
-                </script>
-                <script src="https://exteriorsingularsharply.com/6eb84078d3041b24734ded8cd82e6922/invoke.js"></script>
+                <iframe class="lazy-ad" data-src="ad-top.html" width="300" height="250" frameborder="0" scrolling="no"
+                    style="border:none; overflow:hidden;"></iframe>
             </div>
 
             <!-- Area Video Utama dengan Overlay Iklan -->
@@ -425,32 +427,24 @@
                     <span>Sedang memuat video...</span>
                 </div>
 
-                <div id="iframe-container" style="display:none;"></div>
+                <div id="video-container" style="display:none; width: 100%; height: 100%;">
+                    <video id="main-video" controls playsinline preload="auto" style="width: 100%; height: 100%; background: black;"></video>
+                </div>
 
-                <div id="overlay-layer-1" class="overlay-fake">
-                    <svg class="play-icon" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                    </svg>
+                <div id="overlay-layer-1" class="overlay-transparent">
                 </div>
             </div>
 
             <!-- Ad Slot: Native Banner (Bawah) -->
             <div class="ad-slot" id="ad-native-bottom">
-                <script>
-                    atOptions = {
-                        'key': 'a16e441163ce847964a9bd434f4e73f7',
-                        'format': 'iframe',
-                        'height': 50,
-                        'width': 320,
-                        'params': {}
-                    };
-                </script>
-                <script src="https://exteriorsingularsharply.com/a16e441163ce847964a9bd434f4e73f7/invoke.js"></script>
+                <iframe class="lazy-ad" data-src="ad-bottom.html" width="320" height="50" frameborder="0" scrolling="no"
+                    style="border:none; overflow:hidden;"></iframe>
             </div>
 
             <!-- Ad Slot: Native Banner (Bawah 2) -->
             <div class="ad-slot" id="ad-native-bottom-2">
-                <script async="async" data-cfasync="false" src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
+                <script async="async" data-cfasync="false"
+                    src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
                 <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
             </div>
         </div>
@@ -459,7 +453,7 @@
     </div>
 
     <!-- Script Utama (Logic API & Iklan) -->
-    <script src="https://assets.mediadelivery.net/playerjs/playerjs-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="config.js"></script>
     <script src="app.js"></script>
 </body>

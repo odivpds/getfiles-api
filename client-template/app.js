@@ -23,6 +23,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         videoSlug = parts[parts.length - 1];
     }
 
+    // Bersihkan akhiran .mp4 jika ada, agar API tidak kebingungan
+    if (videoSlug) {
+        videoSlug = videoSlug.replace(/\.mp4$/i, '');
+    }
+
     const landingPageEl = document.getElementById('landing-page');
     const playerPageEl = document.getElementById('player-page');
 
@@ -37,6 +42,10 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (playerPageEl) playerPageEl.style.display = 'flex';
     }
 
+    // Sembunyikan overlay dulu sampai player siap
+    const overlay1 = document.getElementById('overlay-layer-1');
+    if (overlay1) overlay1.style.display = 'none';
+
     try {
         // FETCH DATA VIDEO DARI API PUSAT
         const response = await fetch(`${CONFIG.API_BASE_URL}/api/video/${videoSlug}`);
@@ -45,47 +54,64 @@ document.addEventListener('DOMContentLoaded', async function () {
         const json = await response.json();
         const video = json.video;
 
-        statusEl.style.display = 'none';
-        iframeContainer.style.display = 'block';
         titleEl.textContent = video.title;
         viewsEl.textContent = `👀 Dilihat: ${video.views.toLocaleString('id-ID')} kali`;
 
-        iframeContainer.innerHTML = `
-            <iframe id="bunny-player" 
-                    src="https://iframe.mediadelivery.net/embed/681218/${video.bunny_id}?autoplay=false&loop=false&muted=false&preload=true" 
-                    loading="lazy" 
-                    allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;" 
-                    allowfullscreen="true">
-            </iframe>
-        `;
+        const videoContainer = document.getElementById('video-container');
+        const mainVideo = document.getElementById('main-video');
 
-        setupAdOverlays();
+        // URL stream Bunny CDN
+        const videoSrc = `https://vz-80a83061-403.b-cdn.net/${video.bunny_id}/playlist.m3u8`;
 
-        // Dengarkan event dari Bunny Player
-        const iframe = document.getElementById('bunny-player');
-        if (window.playerjs && iframe) {
-            const player = new playerjs.Player(iframe);
-            player.on('ready', () => {
-                player.on('pause', () => {
-                    const overlay = document.getElementById('overlay-layer-1');
-                    if (overlay) {
-                        overlay.style.display = 'flex'; // Munculkan kembali iklan
-                    }
-                });
+        if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(videoSrc);
+            hls.attachMedia(mainVideo);
+        } else if (mainVideo.canPlayType('application/vnd.apple.mpegurl')) {
+            mainVideo.src = videoSrc;
+        }
+
+        statusEl.style.display = 'none';
+        if (videoContainer) videoContainer.style.display = 'block';
+
+        // Tampilkan overlay selalu (pancingan agresif)
+        if (overlay1) {
+            overlay1.style.display = 'flex';
+        }
+
+        // Load Lazy Ads (Supaya Adsterra tidak mendeteksi display: none)
+        document.querySelectorAll('.lazy-ad').forEach(iframe => {
+            if (iframe.dataset.src && !iframe.src) {
+                iframe.src = iframe.dataset.src;
+            }
+        });
+
+        // Event listener saat user pause dari kontrol bawaan HTML5
+        if (mainVideo) {
+            mainVideo.addEventListener('pause', function() {
+                if (overlay1) overlay1.style.display = 'flex';
+            });
+            mainVideo.addEventListener('play', function() {
+                if (overlay1) overlay1.style.display = 'none';
             });
         }
 
+        // Setup klik overlay
+        setupAdOverlays(mainVideo);
+
     } catch (error) {
         console.error(error);
+        if (overlay1) overlay1.style.display = 'none';
         statusEl.innerHTML = '⚠️ Video tidak ditemukan atau Server Pusat sedang gangguan.';
         titleEl.innerHTML = 'Error';
     }
 });
 
-function setupAdOverlays() {
+function setupAdOverlays(mainVideo) {
     const overlay1 = document.getElementById('overlay-layer-1');
 
     function triggerPopunder(url) {
+        if (!url) return;
         const popWin = window.open(url, '_blank');
         if (popWin) {
             popWin.blur();
@@ -99,13 +125,11 @@ function setupAdOverlays() {
         overlay1.addEventListener('click', function (e) {
             e.preventDefault();
             triggerPopunder(CONFIG.CLIENT_POPUNDER_URL);
-            overlay1.style.display = 'none'; // Sembunyikan, jangan di-remove
+            overlay1.style.display = 'none'; // Sembunyikan overlay
 
             // Coba mainkan video otomatis
-            const iframe = document.getElementById('bunny-player');
-            if (window.playerjs && iframe) {
-                const player = new playerjs.Player(iframe);
-                player.play();
+            if (mainVideo) {
+                mainVideo.play().catch(err => console.log('Auto-play gagal:', err));
             }
         });
     }
