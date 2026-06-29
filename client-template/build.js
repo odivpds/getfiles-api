@@ -7,6 +7,8 @@ const DIST_DIR = path.join(__dirname, 'dist');
 const APP_JS_PATH = path.join(__dirname, 'app.js');
 const INDEX_HTML_PATH = path.join(__dirname, 'index.html');
 const CONFIG_JS_PATH = path.join(__dirname, 'config.js');
+const AD_TOP_PATH = path.join(__dirname, 'ad-top.html');
+const AD_BOTTOM_PATH = path.join(__dirname, 'ad-bottom.html');
 
 if (!fs.existsSync(DIST_DIR)) {
     fs.mkdirSync(DIST_DIR);
@@ -45,9 +47,11 @@ async function build() {
     fs.writeFileSync(path.join(DIST_DIR, '404.html'), minifiedHtml);
     console.log('✅ index.html dan 404.html berhasil dipadatkan dan disimpan ke dist/');
 
-    console.log('📄 Menyalin config.js (Tidak diacak)...');
+    console.log('📄 Menyalin config.js & file Iklan (Tidak diacak)...');
     fs.copyFileSync(CONFIG_JS_PATH, path.join(DIST_DIR, 'config.js'));
-    console.log('✅ config.js berhasil disalin ke dist/config.js');
+    if (fs.existsSync(AD_TOP_PATH)) fs.copyFileSync(AD_TOP_PATH, path.join(DIST_DIR, 'ad-top.html'));
+    if (fs.existsSync(AD_BOTTOM_PATH)) fs.copyFileSync(AD_BOTTOM_PATH, path.join(DIST_DIR, 'ad-bottom.html'));
+    console.log('✅ File Iklan berhasil disalin ke dist/');
 
     console.log('🎉 Selesai! Folder "dist" kini siap di-upload ke Github Pages.');
 }

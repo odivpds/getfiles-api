@@ -138,12 +138,18 @@ elseif (preg_match('#(/api)?/videos$#', $path) && $_SERVER['REQUEST_METHOD'] ===
 }
 
 // 3. GET /api/video/{slug} -> Ambil 1 video untuk Player (client-template)
-elseif (preg_match('#(/api)?/video/([\w-]+)$#', $path, $matches) && $_SERVER['REQUEST_METHOD'] === 'GET') {
+elseif (preg_match('#(/api)?/video/([\w\.-]+)$#', $path, $matches) && $_SERVER['REQUEST_METHOD'] === 'GET') {
     $slug = $matches[2];
     
-    // Cari video
-    $stmt = $db->prepare("SELECT * FROM videos WHERE slug = ? LIMIT 1");
-    $stmt->execute([$slug]);
+    // Hapus ekstensi .mp4 jika URL API secara tidak sengaja memanggilnya
+    $slug = str_ireplace('.mp4', '', $slug);
+    
+    // Ambil 5 karakter terakhir sebagai ID Unik
+    $short_id = substr($slug, -5);
+
+    // Cari video yang memiliki slug berakhiran dengan ID Unik tersebut
+    $stmt = $db->prepare("SELECT * FROM videos WHERE slug LIKE ? LIMIT 1");
+    $stmt->execute(['%-' . $short_id]);
     $video = $stmt->fetch();
 
     if ($video) {
