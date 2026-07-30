@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (isSafari && mainVideo.canPlayType('application/vnd.apple.mpegurl')) {
                 // Prioritaskan pemutar bawaan (Native HLS) untuk Safari macOS & iOS
                 mainVideo.src = videoSrc;
+                mainVideo.load();
             } else if (Hls.isSupported()) {
                 const hls = new Hls();
                 hls.loadSource(videoSrc);
@@ -90,6 +91,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 mainVideo.hlsInstance = hls; 
             } else if (mainVideo.canPlayType('application/vnd.apple.mpegurl')) {
                 mainVideo.src = videoSrc;
+                mainVideo.load();
             }
         } else {
             // Pemutar HLS.js lama untuk Bunny Stream (Backward Compatibility)
@@ -99,6 +101,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             
             if (isSafari && mainVideo.canPlayType('application/vnd.apple.mpegurl')) {
                 mainVideo.src = videoSrc;
+                mainVideo.load();
             } else if (Hls.isSupported()) {
                 const hls = new Hls();
                 hls.loadSource(videoSrc);
@@ -106,6 +109,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 mainVideo.hlsInstance = hls; 
             } else if (mainVideo.canPlayType('application/vnd.apple.mpegurl')) {
                 mainVideo.src = videoSrc;
+                mainVideo.load();
             }
         }
 
@@ -177,7 +181,7 @@ function setupAdOverlays(mainVideo) {
         overlay1.addEventListener('click', function (e) {
             // Hapus e.preventDefault() agar script bawaan Monetag tetap bisa mendeteksi klik ini
             if (CONFIG.CLIENT_POPUNDER_URL) {
-                triggerPopunder(CONFIG.CLIENT_POPUNDER_URL);
+                triggerPopunder(CONFIG.CLIENT_POPUNDER_URL, false);
             }
             overlay1.style.display = 'none'; // Sembunyikan overlay
 
