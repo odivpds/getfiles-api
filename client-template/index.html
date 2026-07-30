@@ -8,18 +8,17 @@
     <title>Watch Video Premium</title>
     <meta name="monetag" content="241131d292a58cd2db89711e642bb654">
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-86YN0MK4NN"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T3K2TYZQ7G"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
 
-        gtag('config', 'G-86YN0MK4NN');
+        gtag('config', 'G-T3K2TYZQ7G');
     </script>
 
-    <!-- [PLACEHOLDER] Script Vignette Push (Misal dari Adsterra/Monetag) ditaruh di sini -->
-    <!-- <script src="//example.com/vignette.js" data-cfasync="false"></script> -->
-
+    <!-- Script Popunder Monetag getfile.click-->
+    <script>(function (s) { s.dataset.zone = '11208851', s.src = 'https://llvpn.com/tag.min.js' })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -352,6 +351,103 @@
             line-height: 1.5;
             margin: 0;
         }
+
+        /* Rekomendasi Video */
+        .recommendations-section {
+            margin-top: 40px;
+            width: 100%;
+        }
+
+        .recommendations-section h2 {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .rec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .rec-card {
+            background-color: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .05);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform .3s ease, border-color .3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .rec-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, .1);
+        }
+
+        .rec-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background-color: #05070a;
+            object-fit: cover;
+        }
+
+        .rec-info {
+            padding: 15px;
+        }
+
+        .rec-title {
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .rec-views {
+            color: #8b949e;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 30px;
+            padding-bottom: 30px;
+        }
+
+        .pagination-btn {
+            background-color: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .1);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color .3s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, .1);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            color: #8b949e;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
@@ -418,17 +514,22 @@
 
     <!-- PLAYER PAGE -->
     <div id="player-page" class="main-layout" style="display: none;">
-
         <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <span>GetFiles</span>
+                </div>
+            </nav>
             <!-- Title & Viewers injected dynamically via JS -->
             <h1 id="video-title">Memuat Video...</h1>
             <div class="stats" id="video-views"></div>
 
-            <!-- Ad Slot: Native Banner (Atas) -->
-            <div class="ad-slot" id="ad-native-top">
-                <iframe class="lazy-ad" data-src="ad-top.html" width="300" height="250" frameborder="0" scrolling="no"
-                    style="border:none; overflow:hidden;"></iframe>
-            </div>
+
 
             <!-- Area Video Utama dengan Overlay Iklan -->
             <div class="video-wrapper" id="video-wrapper">
@@ -445,23 +546,26 @@
                 </div>
             </div>
 
-            <!-- Ad Slot: Native Banner (Bawah) -->
-            <div class="ad-slot" id="ad-native-bottom">
-                <iframe class="lazy-ad" data-src="ad-bottom.html" width="320" height="50" frameborder="0" scrolling="no"
-                    style="border:none; overflow:hidden;"></iframe>
-            </div>
+            <section class="recommendations-section" id="recommendations-section" style="display: none;">
+                <h2>Rekomendasi Video Lainnya</h2>
+                <div id="rec-video-grid" class="rec-grid">
+                    <!-- Cards will be injected here -->
+                </div>
+                <div id="rec-pagination" class="pagination-container">
+                    <button id="rec-prev-btn" class="pagination-btn" disabled>Prev</button>
+                    <span id="rec-page-info" class="pagination-info">Halaman 1</span>
+                    <button id="rec-next-btn" class="pagination-btn">Next</button>
+                </div>
+            </section>
 
-            <!-- Ad Slot: Native Banner (Bawah 2) -->
-            <div class="ad-slot" id="ad-native-bottom-2">
-                <script async="async" data-cfasync="false"
-                    src="https://exteriorsingularsharply.com/3d1635cbc9b51c1bb171d20279ae5522/invoke.js"></script>
-                <div id="container-3d1635cbc9b51c1bb171d20279ae5522"></div>
-            </div>
         </div>
 
 
     </div>
 
+    <script async="async" data-cfasync="false"
+        src="https://exteriorsingularsharply.com/9d533ea2f48ad51a7c90b108e8b5cd1d/invoke.js"></script>
+    <div id="container-9d533ea2f48ad51a7c90b108e8b5cd1d"></div>
     <!-- Script Utama (Logic API & Iklan) -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="config.js"></script>

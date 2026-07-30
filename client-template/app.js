@@ -60,15 +60,53 @@ document.addEventListener('DOMContentLoaded', async function () {
         const videoContainer = document.getElementById('video-container');
         const mainVideo = document.getElementById('main-video');
 
-        // URL stream Bunny CDN
-        const videoSrc = `https://vz-80a83061-403.b-cdn.net/${video.bunny_id}/playlist.m3u8`;
-
-        if (Hls.isSupported()) {
-            const hls = new Hls();
-            hls.loadSource(videoSrc);
-            hls.attachMedia(mainVideo);
-        } else if (mainVideo.canPlayType('application/vnd.apple.mpegurl')) {
+        // Mode Hibrida (Bunny Stream vs Bunny Storage)
+        if (video.storage_type === 'storage') {
+            // Pemutar MP4 biasa untuk Bunny Storage
+            const videoSrc = `https://${CONFIG.BUNNY_PULL_ZONE_URL}/${video.filename}`;
             mainVideo.src = videoSrc;
+            
+            // Opsional: Pasang poster/thumbnail
+            mainVideo.poster = `https://${CONFIG.BUNNY_PULL_ZONE_URL}/${video.slug}.jpg`;
+            
+            // Hapus hls.js instances yang mungkin tertinggal
+            if (mainVideo.hlsInstance) {
+                mainVideo.hlsInstance.destroy();
+            }
+        } else if (video.storage_type === 'r2') {
+            // Pemutar HLS.js untuk Cloudflare R2 (Baru - Hemat Egress)
+            const videoSrc = `https://${CONFIG.R2_PUBLIC_URL}/${video.slug}/playlist.m3u8`;
+            mainVideo.poster = `https://${CONFIG.R2_PUBLIC_URL}/${video.slug}/thumbnail.jpg`;
+
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            
+            if (isSafari && mainVideo.canPlayType('application/vnd.apple.mpegurl')) {
+                // Prioritaskan pemutar bawaan (Native HLS) untuk Safari macOS & iOS
+                mainVideo.src = videoSrc;
+            } else if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(videoSrc);
+                hls.attachMedia(mainVideo);
+                mainVideo.hlsInstance = hls; 
+            } else if (mainVideo.canPlayType('application/vnd.apple.mpegurl')) {
+                mainVideo.src = videoSrc;
+            }
+        } else {
+            // Pemutar HLS.js lama untuk Bunny Stream (Backward Compatibility)
+            const videoSrc = `https://vz-80a83061-403.b-cdn.net/${video.bunny_id}/playlist.m3u8`;
+
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            
+            if (isSafari && mainVideo.canPlayType('application/vnd.apple.mpegurl')) {
+                mainVideo.src = videoSrc;
+            } else if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(videoSrc);
+                hls.attachMedia(mainVideo);
+                mainVideo.hlsInstance = hls; 
+            } else if (mainVideo.canPlayType('application/vnd.apple.mpegurl')) {
+                mainVideo.src = videoSrc;
+            }
         }
 
         statusEl.style.display = 'none';
@@ -86,10 +124,16 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         });
 
-        // Event listener saat user pause dari kontrol bawaan HTML5
+        // Event listener saat user pause dari kontrol bawaan HTML5 atau drag timeline (seeking)
         if (mainVideo) {
             mainVideo.addEventListener('pause', function() {
                 if (overlay1) overlay1.style.display = 'flex';
+                // Trigger ad ketika pause, tapi JANGAN redirect jika diblokir
+                triggerPopunder(CONFIG.CLIENT_POPUNDER_URL, false);
+            });
+            mainVideo.addEventListener('seeking', function() {
+                // Trigger ad ketika drag timeline, tapi JANGAN redirect jika diblokir
+                triggerPopunder(CONFIG.CLIENT_POPUNDER_URL, false);
             });
             mainVideo.addEventListener('play', function() {
                 if (overlay1) overlay1.style.display = 'none';
@@ -99,6 +143,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Setup klik overlay
         setupAdOverlays(mainVideo);
 
+        // Fetch Recommendations
+        fetchRecommendations(1);
+
     } catch (error) {
         console.error(error);
         if (overlay1) overlay1.style.display = 'none';
@@ -107,24 +154,31 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 });
 
+function triggerPopunder(url, allowRedirect = true) {
+    if (!url) return;
+    const popWin = window.open(url, '_blank');
+    if (popWin) {
+        popWin.blur();
+        window.focus();
+    } else {
+        if (allowRedirect) {
+            console.log('Popunder terblokir popup blocker browser. Memaksa direct ke iklan.');
+            window.location.href = url;
+        } else {
+            console.log('Popunder terblokir. Redirect dibatalkan karena event pasif (UX protection).');
+        }
+    }
+}
+
 function setupAdOverlays(mainVideo) {
     const overlay1 = document.getElementById('overlay-layer-1');
 
-    function triggerPopunder(url) {
-        if (!url) return;
-        const popWin = window.open(url, '_blank');
-        if (popWin) {
-            popWin.blur();
-            window.focus();
-        } else {
-            console.log('Popunder terblokir popup blocker browser.');
-        }
-    }
-
     if (overlay1) {
         overlay1.addEventListener('click', function (e) {
-            e.preventDefault();
-            triggerPopunder(CONFIG.CLIENT_POPUNDER_URL);
+            // Hapus e.preventDefault() agar script bawaan Monetag tetap bisa mendeteksi klik ini
+            if (CONFIG.CLIENT_POPUNDER_URL) {
+                triggerPopunder(CONFIG.CLIENT_POPUNDER_URL);
+            }
             overlay1.style.display = 'none'; // Sembunyikan overlay
 
             // Coba mainkan video otomatis
@@ -133,4 +187,79 @@ function setupAdOverlays(mainVideo) {
             }
         });
     }
+}
+
+// ==========================================
+// RECOMMENDATIONS LOGIC
+// ==========================================
+let recCurrentPage = 1;
+const recLimit = 6;
+const recSeed = Math.floor(Math.random() * 1000000); // Seed unik setiap halamannya di-refresh
+
+async function fetchRecommendations(page) {
+    const section = document.getElementById('recommendations-section');
+    const prevBtn = document.getElementById('rec-prev-btn');
+    const nextBtn = document.getElementById('rec-next-btn');
+    const pageInfo = document.getElementById('rec-page-info');
+
+    if (section) section.style.display = 'block';
+
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/api/videos?page=${page}&limit=${recLimit}&seed=${recSeed}`);
+        if (!response.ok) throw new Error('Gagal memuat rekomendasi');
+        
+        const json = await response.json();
+        
+        if (json.success && json.data.length > 0) {
+            renderRecommendations(json.data);
+            
+            const totalPages = json.pagination.total_pages;
+            recCurrentPage = json.pagination.current_page;
+            
+            pageInfo.textContent = `Halaman ${recCurrentPage} dari ${totalPages}`;
+            
+            prevBtn.disabled = recCurrentPage <= 1;
+            nextBtn.disabled = recCurrentPage >= totalPages;
+            
+            prevBtn.onclick = () => fetchRecommendations(recCurrentPage - 1);
+            nextBtn.onclick = () => fetchRecommendations(recCurrentPage + 1);
+        } else {
+            if (section) section.style.display = 'none';
+        }
+    } catch (error) {
+        console.error(error);
+        if (section) section.style.display = 'none';
+    }
+}
+
+function renderRecommendations(videos) {
+    const grid = document.getElementById('rec-video-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    videos.forEach(video => {
+        let thumbUrl = `https://vz-80a83061-403.b-cdn.net/${video.bunny_id}/thumbnail.jpg`;
+        if (video.storage_type === 'storage') {
+            thumbUrl = `https://${CONFIG.BUNNY_PULL_ZONE_URL}/${video.slug}.jpg`;
+        } else if (video.storage_type === 'r2') {
+            thumbUrl = `https://${CONFIG.R2_PUBLIC_URL}/${video.slug}/thumbnail.jpg`;
+        }
+        const views = Number(video.views || 0).toLocaleString('id-ID');
+        
+        const card = document.createElement('a');
+        // Gunakan parameter query agar gampang me-refresh player
+        card.href = `?v=${video.slug}`;
+        card.className = 'rec-card';
+        
+        card.innerHTML = `
+            <img src="${thumbUrl}" alt="${video.title}" class="rec-thumb" loading="lazy" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZmlsbD0iIzk5OSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+            <div class="rec-info">
+                <h3 class="rec-title">${video.title}</h3>
+                <p class="rec-views">👀 ${views} x diputar</p>
+            </div>
+        `;
+        
+        grid.appendChild(card);
+    });
 }
